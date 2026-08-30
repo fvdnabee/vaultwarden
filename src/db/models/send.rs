@@ -202,7 +202,7 @@ impl Send {
         self.revision_date = Utc::now().naive_utc();
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(sends::table)
                     .values(&*self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)

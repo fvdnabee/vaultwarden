@@ -77,7 +77,7 @@ impl Folder {
         self.updated_at = Utc::now().naive_utc();
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(folders::table)
                     .values(&*self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -139,7 +139,7 @@ impl Folder {
 impl FolderCipher {
     pub async fn save(&self, conn: &DbConn) -> EmptyResult {
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(folders_ciphers::table)
                     .values(self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)

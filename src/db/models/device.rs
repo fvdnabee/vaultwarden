@@ -146,7 +146,7 @@ impl Device {
         }
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 crate::util::retry(||
                     diesel::insert_into(devices::table)
                         .values(&*self)

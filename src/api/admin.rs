@@ -85,6 +85,8 @@ pub fn catchers() -> Vec<Catcher> {
 static DB_TYPE: LazyLock<&str> = LazyLock::new(|| match ACTIVE_DB_TYPE.get() {
     #[cfg(mysql)]
     Some(DbConnType::Mysql) => "MySQL",
+    #[cfg(mariadb)]
+    Some(DbConnType::Mariadb) => "MariaDB",
     #[cfg(postgresql)]
     Some(DbConnType::Postgresql) => "PostgreSQL",
     #[cfg(sqlite)]

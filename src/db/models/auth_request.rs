@@ -84,7 +84,7 @@ impl AuthRequest {
 impl AuthRequest {
     pub async fn save(&self, conn: &DbConn) -> EmptyResult {
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(auth_requests::table)
                     .values(self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)

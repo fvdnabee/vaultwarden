@@ -46,6 +46,8 @@ where
 pub enum DbConnInner {
     #[cfg(mysql)]
     Mysql(diesel::mysql::MysqlConnection),
+    #[cfg(mariadb)]
+    Mariadb(diesel::mariadb::MariadbConnection),
     #[cfg(postgresql)]
     Postgresql(diesel::pg::PgConnection),
     #[cfg(sqlite)]
@@ -70,6 +72,11 @@ impl DbConnManager {
             Ok(DbConnType::Mysql) => {
                 let conn = diesel::mysql::MysqlConnection::establish(&self.database_url)?;
                 Ok(DbConnInner::Mysql(conn))
+            }
+            #[cfg(mariadb)]
+            Ok(DbConnType::Mariadb) => {
+                let conn = diesel::mariadb::MariadbConnection::establish(&self.database_url)?;
+                Ok(DbConnInner::Mariadb(conn))
             }
             #[cfg(postgresql)]
             Ok(DbConnType::Postgresql) => {
@@ -112,6 +119,8 @@ impl diesel::r2d2::ManageConnection for DbConnManager {
 pub enum DbConnType {
     #[cfg(mysql)]
     Mysql,
+    #[cfg(mariadb)]
+    Mariadb,
     #[cfg(postgresql)]
     Postgresql,
     #[cfg(sqlite)]
@@ -197,6 +206,10 @@ impl DbPool {
             DbConnType::Mysql => {
                 mysql_migrations::run_migrations(&db_url)?;
             }
+            #[cfg(mariadb)]
+            DbConnType::Mariadb => {
+                mariadb_migrations::run_migrations(&db_url)?;
+            }
             #[cfg(postgresql)]
             DbConnType::Postgresql => {
                 postgresql_migrations::run_migrations(&db_url)?;
@@ -262,6 +275,14 @@ impl DbConnType {
             #[cfg(not(mysql))]
             err!("`DATABASE_URL` is a MySQL URL, but the 'mysql' feature is not enabled")
 
+        // Mariadb
+        } else if url.len() > 8 && (&url[..8] == "mariadb:") {
+            #[cfg(mariadb)]
+            return Ok(DbConnType::Mariadb);
+
+            #[cfg(not(mariadb))]
+            err!("`DATABASE_URL` is a MariaDB URL, but the 'mariadb' feature is not enabled")
+
         // Postgresql
         } else if url.len() > 11 && (&url[..11] == "postgresql:" || &url[..9] == "postgres:") {
             #[cfg(postgresql)]
@@ -311,6 +332,8 @@ impl DbConnType {
         match self {
             #[cfg(mysql)]
             Self::Mysql => String::new(),
+            #[cfg(mariadb)]
+            Self::Mariadb => String::new(),
             #[cfg(postgresql)]
             Self::Postgresql => String::new(),
             #[cfg(sqlite)]
@@ -360,6 +383,13 @@ macro_rules! impl_FromToSqlText {
         #[cfg(mysql)]
         impl ToSql<Text, diesel::mysql::Mysql> for $name {
             fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, diesel::mysql::Mysql>) -> diesel::serialize::Result {
+                serde_json::to_writer(out, self).map(|_| diesel::serialize::IsNull::No).map_err(Into::into)
+            }
+        }
+
+        #[cfg(mariadb)]
+        impl ToSql<Text, diesel::mariadb::Mariadb> for $name {
+            fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, diesel::mariadb::Mariadb>) -> diesel::serialize::Result {
                 serde_json::to_writer(out, self).map(|_| diesel::serialize::IsNull::No).map_err(Into::into)
             }
         }
@@ -437,7 +467,7 @@ pub fn backup_sqlite() -> Result<String, Error> {
 /// Get the SQL Server version
 pub async fn get_sql_server_version(conn: &DbConn) -> String {
     db_run! { conn:
-        postgresql,mysql {
+        postgresql, mysql, mariadb {
             diesel::select(diesel::dsl::sql::<diesel::sql_types::Text>("version();"))
             .get_result::<String>(conn)
             .unwrap_or_else(|_| "Unknown".to_owned())
@@ -508,6 +538,27 @@ mod mysql_migrations {
     pub fn run_migrations(db_url: &str) -> Result<(), super::Error> {
         // Make sure the database is up to date (create if it doesn't exist, or run the migrations)
         let mut connection = diesel::mysql::MysqlConnection::establish(db_url)?;
+
+        // Disable Foreign Key Checks during migration
+        // Scoped to a connection/session.
+        diesel::sql_query("SET FOREIGN_KEY_CHECKS = 0")
+            .execute(&mut connection)
+            .expect("Failed to disable Foreign Key Checks during migrations");
+
+        connection.run_pending_migrations(MIGRATIONS).expect("Error running migrations");
+        Ok(())
+    }
+}
+
+#[cfg(mariadb)]
+mod mariadb_migrations {
+    use diesel::{Connection, RunQueryDsl};
+    use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
+    pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/mysql");
+
+    pub fn run_migrations(db_url: &str) -> Result<(), super::Error> {
+        // Make sure the database is up to date (create if it doesn't exist, or run the migrations)
+        let mut connection = diesel::mariadb::MariadbConnection::establish(db_url)?;
 
         // Disable Foreign Key Checks during migration
         // Scoped to a connection/session.

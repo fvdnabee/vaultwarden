@@ -166,7 +166,7 @@ impl Group {
         self.revision_date = Utc::now().naive_utc();
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(groups::table)
                     .values(&*self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -327,7 +327,7 @@ impl CollectionGroup {
         );
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(collections_groups::table)
                     .values(values)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -472,7 +472,7 @@ impl GroupUser {
         );
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(groups_users::table)
                     .values(values)
                     .on_conflict(diesel::dsl::DuplicatedKeys)

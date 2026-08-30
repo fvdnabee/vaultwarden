@@ -353,7 +353,7 @@ impl Organization {
         }
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(organizations::table)
                     .values(self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -744,7 +744,7 @@ impl Membership {
         User::update_uuid_revision(&self.user_uuid, conn).await;
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(users_organizations::table)
                     .values(self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -1169,7 +1169,7 @@ impl Membership {
 impl OrganizationApiKey {
     pub async fn save(&self, conn: &DbConn) -> EmptyResult {
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(organization_api_key::table)
                     .values(self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)

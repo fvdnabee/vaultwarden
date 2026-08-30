@@ -208,7 +208,7 @@ impl Event {
     /// Basic Queries
     pub async fn save(&self, conn: &DbConn) -> EmptyResult {
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(event::table)
                     .values(self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -246,7 +246,7 @@ impl Event {
                 }
                 Ok(())
             }
-            mysql {
+            mysql, mariadb {
                 diesel::insert_or_ignore_into(event::table)
                 .values(&events)
                 .execute(conn)

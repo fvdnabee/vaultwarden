@@ -146,7 +146,7 @@ impl EmergencyAccess {
         self.updated_at = Utc::now().naive_utc();
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(emergency_access::table)
                     .values(&*self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)

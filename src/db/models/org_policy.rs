@@ -112,7 +112,7 @@ impl OrgPolicy {
 impl OrgPolicy {
     pub async fn save(&self, conn: &DbConn) -> EmptyResult {
         db_run! { conn:
-            sqlite, mysql {
+            sqlite, mysql, mariadb {
                 match diesel::replace_into(org_policies::table)
                     .values(self)
                     .execute(conn)

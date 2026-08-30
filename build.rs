@@ -6,9 +6,11 @@ fn main() {
     println!("cargo:rustc-cfg=sqlite");
     #[cfg(feature = "mysql")]
     println!("cargo:rustc-cfg=mysql");
+    #[cfg(feature = "mariadb")]
+    println!("cargo:rustc-cfg=mariadb");
     #[cfg(feature = "postgresql")]
     println!("cargo:rustc-cfg=postgresql");
-    #[cfg(not(any(feature = "sqlite_system", feature = "mysql", feature = "postgresql")))]
+    #[cfg(not(any(feature = "sqlite_system", feature = "mysql", feature = "mariadb", feature = "postgresql")))]
     compile_error!(
         "You need to enable one DB backend. To build with previous defaults do: cargo build --features sqlite"
     );
@@ -20,6 +22,7 @@ fn main() {
     // and avoid warnings when they are used in the code.
     println!("cargo::rustc-check-cfg=cfg(sqlite)");
     println!("cargo::rustc-check-cfg=cfg(mysql)");
+    println!("cargo::rustc-check-cfg=cfg(mariadb)");
     println!("cargo::rustc-check-cfg=cfg(postgresql)");
     println!("cargo::rustc-check-cfg=cfg(s3)");
 

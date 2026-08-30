@@ -128,7 +128,7 @@ impl OrgPolicy {
         self.revision_date = Utc::now().naive_utc();
 
         db_run! { conn:
-            sqlite, mysql {
+            sqlite, mysql, mariadb {
                 match diesel::replace_into(org_policies::table)
                     .values(&*self)
                     .execute(conn)

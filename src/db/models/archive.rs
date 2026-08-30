@@ -41,7 +41,7 @@ impl Archive {
     ) -> EmptyResult {
         User::update_uuid_revision(user_uuid, conn).await;
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(archives::table)
                     .values((
                         archives::user_uuid.eq(user_uuid),

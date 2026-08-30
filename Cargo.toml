@@ -30,6 +30,7 @@ default = [
 enable_syslog = []
 # Please enable at least one of these DB backends.
 mysql = ["diesel/mysql", "diesel_migrations/mysql"]
+mariadb = ["diesel/mariadb", "diesel_migrations/mariadb"]
 postgresql = ["diesel/postgres", "diesel_migrations/postgres"]
 sqlite_system = ["diesel/sqlite", "diesel_migrations/sqlite"] # Dynamically link SQLite
 sqlite = ["sqlite_system", "libsqlite3-sys/bundled"] # Statically link SQLite into the binary instead of dynamically.
@@ -107,8 +108,8 @@ serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
 
 # A safe, extensible ORM and Query builder
-diesel = { version = "2.3.14", features = ["chrono", "r2d2", "numeric"] }
-diesel_migrations = "2.3.2"
+diesel = { git = "https://github.com/diesel-rs/diesel.git", features = ["chrono", "r2d2", "numeric"] }
+diesel_migrations = { git = "https://github.com/diesel-rs/diesel.git" }
 
 derive_more = { version = "2.1.1", features = [
     "as_ref",

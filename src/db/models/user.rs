@@ -341,7 +341,7 @@ impl User {
         self.updated_at = Utc::now().naive_utc();
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(users::table)
                     .values(&*self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -490,7 +490,7 @@ impl Invitation {
         db_run! { conn:
             // Not checking for ForeignKey Constraints here
             // Table invitations does not have any ForeignKey Constraints.
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(invitations::table)
                     .values(self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -575,7 +575,7 @@ pub struct KeyId(String);
 impl SsoUser {
     pub async fn save(&self, conn: &DbConn) -> EmptyResult {
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(sso_users::table)
                     .values(self)
                     .execute(conn)

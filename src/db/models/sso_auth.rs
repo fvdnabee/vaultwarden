@@ -86,7 +86,7 @@ impl SsoAuth {
 impl SsoAuth {
     pub async fn save(&self, conn: &DbConn) -> EmptyResult {
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(sso_auth::table)
                     .values(self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)

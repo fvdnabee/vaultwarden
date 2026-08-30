@@ -168,7 +168,7 @@ impl Collection {
         self.update_users_revision(conn).await;
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(collections::table)
                     .values(self)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -736,7 +736,7 @@ impl CollectionUser {
         );
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(users_collections::table)
                     .values(values)
                     .on_conflict(diesel::dsl::DuplicatedKeys)
@@ -893,7 +893,7 @@ impl CollectionCipher {
         Self::update_users_revision(collection_uuid, conn).await;
 
         db_run! { conn:
-            mysql {
+            mysql, mariadb {
                 diesel::insert_into(ciphers_collections::table)
                     .values((
                         ciphers_collections::cipher_uuid.eq(cipher_uuid),
